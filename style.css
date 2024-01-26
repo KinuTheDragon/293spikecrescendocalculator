@@ -1,0 +1,60 @@
+:root {
+    --blue: #08f;
+    --red: #f33;
+    --text: #fff;
+    --background: #111;
+}
+
+div {
+    flex-grow: 1;
+}
+
+body {
+    background-color: var(--background);
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    display: grid;
+    grid-template-columns: repeat(2, 50%);
+}
+
+input {
+    min-width: 0;
+}
+
+.robots {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+}
+
+.robot {
+    display: grid;
+    grid-template-rows: repeat(2, auto);
+}
+
+.data-input {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+}
+
+#blue-alliance {
+    --color: var(--blue);
+}
+
+#red-alliance {
+    --color: var(--red);
+}
+
+#blue-alliance, #red-alliance {
+    background-color: var(--color);
+    color: var(--text);
+    margin: 2.5%;
+    border-radius: 10px;
+    padding: 1%;
+}
+
+#robot-template {
+    display: none;
+}

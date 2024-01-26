@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <meta viewport="width=device-width, initial-scale=1.0">
+        <meta charset="utf-8">
+        <meta type="description" content="2024 Crescendo score predictor">
+
+        <title>Crescendo Score Predictor</title>
+
+        <link href="https://fonts.cdnfonts.com/css/inter" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="blue-alliance">
+            <h3>Blue Alliance</h3>
+            <div id="blue-robots" class="robots"></div>
+        </div>
+        <div id="red-alliance">
+            <h3>Red Alliance</h3>
+            <div id="red-robots" class="robots"></div>
+        </div>
+        
+        <div id="robot-template">
+            <div class="robot">
+                <h4>Team ${id+1}</h4>
+                <div class="data-input">
+                    <label for="${color}-${id}-teamNumber">Team number:</label>
+                    <input id="${color}-${id}-teamNumber" placeholder="Team number" />
+                    <label for="${color}-${id}-cycleTime">Cycle time (seconds):</label>
+                    <input id="${color}-${id}-cycleTime" placeholder="Cycle time (seconds)" />
+                </div>
+            </div>
+        </div>
+
+        <script src="generate.js"></script>
+        <script src="script.js"></script>
+    </body>
+</html>
