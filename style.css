@@ -3,6 +3,8 @@
     --red: #f33;
     --text: #fff;
     --background: #111;
+    --result: #0f0;
+    --error: #f80;
 }
 
 body {
@@ -25,7 +27,7 @@ input {
 }
 
 .result {
-    color: #0f0;
+    color: var(--result);
     font-weight: bold;
 }
 
@@ -42,7 +44,7 @@ input {
 
 @keyframes error {
     from {background-color: initial;}
-    to {background-color: #800;}
+    to {background-color: var(--error);}
 }
 
 .robot.error {
