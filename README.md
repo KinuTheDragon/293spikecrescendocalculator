@@ -1,4 +1,4 @@
-# spikecrescendo.github.io
+# 293spikecrescendocalculator
 Website for 293 SPIKE score predictor for the 2024 FRC season, Crescendo
 
 ## Things to do:
