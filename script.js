@@ -30,7 +30,7 @@ class Robot {
 }
 
 function numNotesAtTime(time, cycleTimes) {
-    return cycleTimes.map(x => x ? Math.floor(time / x) : 0).reduce((a, b) => a + b);
+    return cycleTimes.map(x => x ? Math.floor(time / x) : 0).reduce((a, b) => a + b, 0);
 }
 
 function timeUnitsForNotes(numNotes, cycleTimes) {
@@ -64,6 +64,13 @@ function getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes) {
     return timeUnitsForNotes(numNotes, cycleTimes);
 }
 
+function getAllianceScoreTime(isBlueAlliance) {
+    let alliance = getAlliance(isBlueAlliance);
+    if (!alliance.every(x => x.isValid)) return null;
+    let shootTimes = alliance.filter(x => x.canScoreSpeaker).map(x => x.shootTime);
+    return timeUnitsForNotes(4, shootTimes);
+}
+
 function updateOutputs() {
     let robotDivs = [...document.querySelectorAll(".robot:not(.hidden)")];
     robotDivs.forEach(x => {x.classList.remove("error");});
@@ -77,6 +84,13 @@ function updateOutputs() {
         let timeUnits = isNaN(numNotes) ? null : getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes);
         document.getElementById(`${color}-noteGatherTime`).innerText = timeUnits ?? "Unknown";
         document.getElementById(`${color}-endgameNotes`).innerText = getAllianceNotesAtTime(isBlueAlliance, 115) ?? "Unknown";
+        let speakerScoreTime = getAllianceScoreTime(isBlueAlliance);
+        let speakerScoreText;
+        if (speakerScoreTime === null) speakerScoreText = "Unknown";
+        else if (speakerScoreTime === Infinity) speakerScoreText = "No robots can score in speaker";
+        else if (speakerScoreTime <= 10) speakerScoreText = speakerScoreTime + " (Can score all 4)";
+        else speakerScoreText = speakerScoreTime + " (Cannot score all 4)";
+        document.getElementById(`${color}-speakerScoreTime`).innerText = speakerScoreText;
     }
 }
 updateOutputs();
