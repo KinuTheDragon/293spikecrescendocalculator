@@ -10,23 +10,39 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div id="blue-alliance">
-            <h3>Blue Alliance</h3>
-            <div id="blue-robots" class="robots"></div>
+        <div id="alliance" class="template">
+            <div id="${color}-alliance">
+                <h3>${color.capitalize()} Alliance</h3>
+                <div id="${color}-robots" class="robots"></div>
+                <hr/>
+                <h4>Summary Data</h4>
+                <span>
+                    Seconds to gather
+                    <input id="${color}-gatherNotes" class="small-number" type="number" value="6" />
+                    notes:
+                    <span id="${color}-noteGatherTime" class="result"></span>
+                </span><br/>
+                <span>
+                    Number of notes at endgame (115 seconds):
+                    <span id="${color}-endgameNotes" class="result"></span>
+                </span>
+            </div>
         </div>
-        <div id="red-alliance">
-            <h3>Red Alliance</h3>
-            <div id="red-robots" class="robots"></div>
-        </div>
-        
-        <div id="robot-template">
+
+        <div id="robot" class="template">
             <div class="robot">
                 <h4>Team ${id+1}</h4>
                 <div class="data-input">
                     <label for="${color}-${id}-teamNumber">Team number:</label>
                     <input id="${color}-${id}-teamNumber" placeholder="Team number" />
                     <label for="${color}-${id}-cycleTime">Cycle time (seconds):</label>
-                    <input id="${color}-${id}-cycleTime" placeholder="Cycle time (seconds)" />
+                    <input id="${color}-${id}-cycleTime" placeholder="Cycle time (seconds)" type="number" pos int />
+                    <label for="${color}-${id}-cycleTime">Shoot time (seconds):</label>
+                    <input id="${color}-${id}-shootTime" placeholder="Shoot time (seconds)" type="number" pos int />
+                    <label for="${color}-${id}-canScoreAmp">Can score amp?</label>
+                    <div class="center"><input id="${color}-${id}-canScoreAmp" type="checkbox" /></div>
+                    <label for="${color}-${id}-canScoreSpeaker">Can score speaker?</label>
+                    <div class="center"><input id="${color}-${id}-canScoreSpeaker" type="checkbox" /></div>
                 </div>
             </div>
         </div>

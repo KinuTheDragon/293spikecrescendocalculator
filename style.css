@@ -5,10 +5,6 @@
     --background: #111;
 }
 
-div {
-    flex-grow: 1;
-}
-
 body {
     background-color: var(--background);
     width: 100vw;
@@ -24,6 +20,15 @@ input {
     min-width: 0;
 }
 
+.small-number {
+    max-width: 4em;
+}
+
+.result {
+    color: #0f0;
+    font-weight: bold;
+}
+
 .robots {
     display: grid;
     grid-template-columns: repeat(3, auto);
@@ -32,11 +37,28 @@ input {
 .robot {
     display: grid;
     grid-template-rows: repeat(2, auto);
+    border-radius: 5%;
+}
+
+@keyframes error {
+    from {background-color: initial;}
+    to {background-color: #800;}
+}
+
+.robot.error {
+    animation-name: error;
+    animation-duration: 0.5s;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
 }
 
 .data-input {
     display: grid;
     grid-template-columns: repeat(2, auto);
+}
+
+.center {
+    margin: auto;
 }
 
 #blue-alliance {
@@ -53,8 +75,13 @@ input {
     margin: 2.5%;
     border-radius: 10px;
     padding: 1%;
+    transition: 0.25s ease;
 }
 
-#robot-template {
+#blue-alliance:hover, #red-alliance:hover {
+    filter: brightness(1.1);
+}
+
+.template {
     display: none;
 }
