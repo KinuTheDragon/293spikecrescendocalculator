@@ -43,6 +43,8 @@
             <div class="robot">
                 <h4>Team ${id+1}</h4>
                 <div class="data-input">
+                    <label for="${color}-${id}-disabled">Disabled?</label>
+                    <div class="center"><input id="${color}-${id}-disabled" class="disabler" type="checkbox" /></div>
                     <label for="${color}-${id}-teamNumber">Team number:</label>
                     <input id="${color}-${id}-teamNumber" placeholder="Team number" />
                     <label for="${color}-${id}-cycleTime">Cycle time (seconds):</label>

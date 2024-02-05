@@ -17,4 +17,4 @@ Website for 293 SPIKE score predictor for the 2024 FRC season, Crescendo
   - [x] Number of notes at endgame
   - [x] Seconds to score 4 in speaker
 - [x] Load from CSV
-- [ ] Disable robot entirely
+- [x] Disable robot entirely

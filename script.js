@@ -6,6 +6,7 @@ class Robot {
 
         let allInputs = document.querySelectorAll("input");
         for (let i of allInputs) {
+            if (this.disabled) break;
             let idParts = i.id.split("-");
             if (idParts[0] === "nonrobot") continue;
             if ((idParts[0] === "blue") !== isBlueAlliance) continue;
@@ -114,21 +115,21 @@ function getRobots() {
 }
 
 function getAllianceNotesAtTime(isBlueAlliance, time) {
-    let alliance = getAlliance(isBlueAlliance);
+    let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
     if (!alliance.every(x => x.isValid)) return null;
     let cycleTimes = alliance.map(x => x.cycleTime);
     return numNotesAtTime(time, cycleTimes);
 }
 
 function getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes) {
-    let alliance = getAlliance(isBlueAlliance);
+    let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
     if (!alliance.every(x => x.isValid)) return null;
     let cycleTimes = alliance.map(x => x.cycleTime);
     return timeUnitsForNotes(numNotes, cycleTimes);
 }
 
 function getAllianceScoreTime(isBlueAlliance) {
-    let alliance = getAlliance(isBlueAlliance);
+    let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
     if (!alliance.every(x => x.isValid)) return null;
     let shootTimes = alliance.filter(x => x.canScoreSpeaker).map(x => x.shootTime);
     return timeUnitsForNotes(4, shootTimes);
@@ -159,3 +160,10 @@ function updateOutputs() {
 updateOutputs();
 
 document.querySelectorAll("input").forEach(i => i.addEventListener("input", updateOutputs));
+
+document.querySelectorAll(".disabler").forEach(i => i.addEventListener("input", e => {
+    let prefix = i.id.split("-").slice(0, -1).join("-") + "-";
+    document.querySelectorAll("input").forEach(ii => {
+        if (ii.id.startsWith(prefix) && ii !== i) ii.disabled = i.checked;
+    });
+}));
