@@ -29,6 +29,69 @@ class Robot {
     }
 }
 
+let scoutingData = null;
+function updateScoutingData() {
+    let file = document.getElementById("scouting").files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.readAsText(file, "UTF-8");
+    reader.onload = () => {
+        let lines = reader.result.replaceAll("\r", "").split("\n").map(x => x.split(","));
+        scoutingData = [];
+        for (let line of lines.slice(1)) {
+            let obj = {};
+            for (let i = 0; i < line.length; i++) {
+                let rawValue = line[i];
+                let value = rawValue;
+                if (/^\d+$/g.test(rawValue)) value = +rawValue;
+                else if (rawValue === "TRUE" || rawValue === "FALSE") value = rawValue === "TRUE";
+                obj[lines[0][i]] = value;
+            }
+            scoutingData.push(rawCsvToCleaned(obj));
+        }
+    }
+}
+
+// CHANGE THIS WHEN THE CSV FORMAT CHANGES
+function rawCsvToCleaned(obj) {
+    return {
+        canClimb: obj["Can climb?"],
+        canScoreAmp: obj["Can score amp?"],
+        canScoreSpeaker: obj["Can score speaker?"],
+        canScoreTrap: obj["Can score trap?"],
+        canShootTrap: obj["Can shoot trap?"],
+        cycleTime: obj["Cycle time (seconds)"],
+        shootTime: obj["Shoot time (seconds)"],
+        teamNumber: obj["Team number"]
+    };
+}
+
+let timeouts = {};
+function loadFromTeamNumber(prefix) {
+    clearTimeout(timeouts[prefix]);
+    document.getElementById(`${prefix}-loader`).classList.remove("badload");
+    document.getElementById(`${prefix}-loader`).innerText = "Load from team number";
+    let teamNumber = document.getElementById(`${prefix}-teamNumber`).value;
+    for (let item of scoutingData ?? []) {
+        if (item.teamNumber.toString() === teamNumber) {
+            for (let k of Object.keys(item)) {
+                let input = document.getElementById(`${prefix}-${k}`);
+                let value = item[k];
+                if (input.type === "checkbox") input.checked = value;
+                else input.value = value;
+            }
+            updateOutputs();
+            return;
+        }
+    }
+    document.getElementById(`${prefix}-loader`).classList.add("badload");
+    document.getElementById(`${prefix}-loader`).innerText = "Invalid team!";
+    timeouts[prefix] = setTimeout(() => {
+        document.getElementById(`${prefix}-loader`).classList.remove("badload");
+        document.getElementById(`${prefix}-loader`).innerText = "Load from team number";
+    }, 500);
+}
+
 function numNotesAtTime(time, cycleTimes) {
     return cycleTimes.map(x => x ? Math.floor(time / x) : 0).reduce((a, b) => a + b, 0);
 }

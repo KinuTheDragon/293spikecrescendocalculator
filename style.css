@@ -3,6 +3,7 @@
     --red: #f33;
     --text: #fff;
     --background: #111;
+    --header: #444;
     --result: #0f0;
     --error: #f80;
 }
@@ -14,6 +15,16 @@ body {
     margin: 0;
     font-family: 'Inter', sans-serif;
     text-align: center;
+    display: grid;
+    grid-template-rows: 10% 90%;
+}
+
+#header {
+    --color: var(--header);
+    margin: 0 !important;
+}
+
+#alliances {
     display: grid;
     grid-template-columns: repeat(2, 50%);
 }
@@ -71,7 +82,7 @@ input {
     --color: var(--red);
 }
 
-#blue-alliance, #red-alliance {
+#blue-alliance, #red-alliance, #header {
     background-color: var(--color);
     color: var(--text);
     margin: 2.5%;
@@ -80,10 +91,14 @@ input {
     transition: 0.25s ease;
 }
 
-#blue-alliance:hover, #red-alliance:hover {
+#blue-alliance:hover, #red-alliance:hover, #header:hover {
     filter: brightness(1.1);
 }
 
 .template {
     display: none;
+}
+
+.badload {
+    color: #f00;
 }

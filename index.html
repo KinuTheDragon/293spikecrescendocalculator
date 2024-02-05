@@ -10,6 +10,12 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
+        <div id="header">
+            <label for="scouting">Scouting spreadsheet:</label>
+            <input type="file" id="scouting" accept=".csv" onchange="updateScoutingData()" />
+        </div>
+        <div id="alliances"></div>
+
         <div id="alliance" class="template">
             <div id="${color}-alliance">
                 <h3>${color.capitalize()} Alliance</h3>
@@ -47,6 +53,15 @@
                     <div class="center"><input id="${color}-${id}-canScoreAmp" type="checkbox" /></div>
                     <label for="${color}-${id}-canScoreSpeaker">Can score speaker?</label>
                     <div class="center"><input id="${color}-${id}-canScoreSpeaker" type="checkbox" /></div>
+                    <label for="${color}-${id}-canClimb">Can climb?</label>
+                    <div class="center"><input id="${color}-${id}-canClimb" type="checkbox" /></div>
+                    <label for="${color}-${id}-canScoreTrap">Can score trap?</label>
+                    <div class="center"><input id="${color}-${id}-canScoreTrap" type="checkbox" /></div>
+                    <label for="${color}-${id}-canShootTrap">Can shoot trap?</label>
+                    <div class="center"><input id="${color}-${id}-canShootTrap" type="checkbox" /></div>
+                </div>
+                <div class="center">
+                    <button id="${color}-${id}-loader" onclick="loadFromTeamNumber('${color}-${id}')">Load from team number</button>
                 </div>
             </div>
         </div>
