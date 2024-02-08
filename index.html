@@ -35,6 +35,38 @@
                 <span>
                     Seconds to score 4 notes in speaker:
                     <span id="${color}-speakerScoreTime" class="result"></span>
+                </span><br/>
+                <span>
+                    Number of notes scoreable in speaker:
+                    <span id="${color}-speakerScoreCount" class="result"></span>
+                </span><br/>
+                <span>
+                    Seconds to score 2 notes in amp:
+                    <span id="${color}-ampScoreTime" class="result"></span>
+                </span><br/>
+                <span>
+                    Seconds for a supercycle:
+                    <span id="${color}-supercycleTime" class="result"></span>
+                </span><br/>
+                <span>
+                    Points per supercycle:
+                    <span id="${color}-pointsPerSupercycle" class="result"></span>
+                </span><br/>
+                <span>
+                    Number of supercycles by endgame (115 seconds):
+                    <span id="${color}-numSupercycles" class="result"></span>
+                </span><br/>
+                <span>
+                    Remaining seconds:
+                    <span id="${color}-remainingSeconds" class="result"></span>
+                </span><br/>
+                <span>
+                    Non-supercycle points possible:
+                    <span id="${color}-bonusPoints" class="result"></span>
+                </span><br/>
+                <span>
+                    Predicted score by endgame:
+                    <span id="${color}-endgameScore" class="result"></span>
                 </span>
             </div>
         </div>
@@ -48,9 +80,11 @@
                     <label for="${color}-${id}-teamNumber">Team number:</label>
                     <input id="${color}-${id}-teamNumber" placeholder="Team number" />
                     <label for="${color}-${id}-cycleTime">Cycle time (seconds):</label>
-                    <input id="${color}-${id}-cycleTime" placeholder="Cycle time (seconds)" type="number" pos int />
-                    <label for="${color}-${id}-cycleTime">Shoot time (seconds):</label>
-                    <input id="${color}-${id}-shootTime" placeholder="Shoot time (seconds)" type="number" pos int />
+                    <input id="${color}-${id}-cycleTime" placeholder="Cycle time (seconds)" type="number" pos tenth />
+                    <label for="${color}-${id}-shootTime">Shoot time (seconds):</label>
+                    <input id="${color}-${id}-shootTime" placeholder="Shoot time (seconds)" type="number" pos tenth />
+                    <label for="${color}-${id}-ampTime">Amp time (seconds):</label>
+                    <input id="${color}-${id}-ampTime" placeholder="Amp time (seconds)" type="number" pos tenth />
                     <label for="${color}-${id}-canScoreAmp">Can score amp?</label>
                     <div class="center"><input id="${color}-${id}-canScoreAmp" type="checkbox" /></div>
                     <label for="${color}-${id}-canScoreSpeaker">Can score speaker?</label>

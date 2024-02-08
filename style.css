@@ -102,3 +102,19 @@ input {
 .badload {
     color: #f00;
 }
+
+.rainbow {
+    animation-name: rainbow;
+    animation-duration: 2s;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+}
+
+@keyframes rainbow {
+    0% {color: #f80;}
+    20% {color: #ff0;}
+    40% {color: #0f0;}
+    60% {color: #0ff;}
+    80% {color: #00f;}
+    100% {color: #80f;}
+}

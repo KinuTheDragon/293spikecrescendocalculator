@@ -17,7 +17,7 @@ class Robot {
                     setKey(i.valueAsNumber);
                     if (isNaN(i.valueAsNumber)) this.isValid = false;
                     if (i.valueAsNumber <= 0 && i.getAttribute("pos") !== null) this.isValid = false;
-                    if (i.valueAsNumber !== Math.floor(i.valueAsNumber) && i.getAttribute("int") !== null) this.isValid = false;
+                    if (i.valueAsNumber * 10 !== Math.floor(i.valueAsNumber * 10) && i.getAttribute("tenth") !== null) this.isValid = false;
                     break;
                 case "checkbox":
                     setKey(i.checked);
@@ -63,6 +63,7 @@ function rawCsvToCleaned(obj) {
         canShootTrap: obj["Can shoot trap?"],
         cycleTime: obj["Cycle time (seconds)"],
         shootTime: obj["Shoot time (seconds)"],
+        ampTime: obj["Amp time (seconds)"],
         teamNumber: obj["Team number"]
     };
 }
@@ -100,8 +101,8 @@ function numNotesAtTime(time, cycleTimes) {
 function timeUnitsForNotes(numNotes, cycleTimes) {
     if (numNotes <= 0) return 0;
     let upperBound = numNotes * Math.min(...cycleTimes);
-    for (let time = upperBound; time >= 0; time--) {
-        if (numNotesAtTime(time, cycleTimes) < numNotes) return time + 1;
+    for (let time = upperBound * 10; time >= 0; time--) {
+        if (numNotesAtTime(time / 10, cycleTimes) < numNotes) return (time + 1) / 10;
     }
     throw new RangeError("Should not happen - if this does, something has gone horribly wrong.");
 }
@@ -128,34 +129,81 @@ function getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes) {
     return timeUnitsForNotes(numNotes, cycleTimes);
 }
 
-function getAllianceScoreTime(isBlueAlliance) {
+function getAllianceSpeakerScoreTime(isBlueAlliance) {
     let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
     if (!alliance.every(x => x.isValid)) return null;
     let shootTimes = alliance.filter(x => x.canScoreSpeaker).map(x => x.shootTime);
     return timeUnitsForNotes(4, shootTimes);
 }
 
+function getAllianceSpeakerNotes(isBlueAlliance) {
+    let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
+    if (!alliance.every(x => x.isValid)) return null;
+    let shootTimes = alliance.filter(x => x.canScoreSpeaker).map(x => x.shootTime);
+    return Math.min(4, numNotesAtTime(10, shootTimes));
+}
+
+function getAllianceAmpScoreTime(isBlueAlliance) {
+    let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
+    if (!alliance.every(x => x.isValid)) return null;
+    let shootTimes = alliance.filter(x => x.canScoreAmp).map(x => x.ampTime);
+    return timeUnitsForNotes(2, shootTimes);
+}
+
+function getAllianceBonusPoints(isBlueAlliance, timeLeft) {
+    let alliance = getAlliance(isBlueAlliance).filter(robot => !robot.disabled);
+    if (!alliance.every(x => x.isValid)) return null;
+    return numNotesAtTime(timeLeft, alliance.filter(x => x.canScoreSpeaker).map(x => x.cycleTime + x.shootTime)) * 2 +
+           numNotesAtTime(timeLeft, alliance.filter(x => !x.canScoreSpeaker && x.canScoreAmp).map(x => x.cycleTime + x.ampTime)) * 1;
+}
+
 function updateOutputs() {
     let robotDivs = [...document.querySelectorAll(".robot:not(.hidden)")];
     robotDivs.forEach(x => {x.classList.remove("error");});
-    let robots = getRobots();
-    for (let i = 0; i < 6; i++) {
-        if (!robots[i].isValid) robotDivs[i].classList.add("error");
-    }
-    for (let isBlueAlliance of [true, false]) {
-        let color = isBlueAlliance ? "blue" : "red";
-        let numNotes = document.getElementById(`${color}-gatherNotes`).valueAsNumber;
-        let timeUnits = isNaN(numNotes) ? null : getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes);
-        document.getElementById(`${color}-noteGatherTime`).innerText = timeUnits ?? "Unknown";
-        document.getElementById(`${color}-endgameNotes`).innerText = getAllianceNotesAtTime(isBlueAlliance, 115) ?? "Unknown";
-        let speakerScoreTime = getAllianceScoreTime(isBlueAlliance);
-        let speakerScoreText;
-        if (speakerScoreTime === null) speakerScoreText = "Unknown";
-        else if (speakerScoreTime === Infinity) speakerScoreText = "No robots can score in speaker";
-        else if (speakerScoreTime <= 10) speakerScoreText = speakerScoreTime + " (Can score all 4)";
-        else speakerScoreText = speakerScoreTime + " (Cannot score all 4)";
-        document.getElementById(`${color}-speakerScoreTime`).innerText = speakerScoreText;
-    }
+    setTimeout(() => {
+        let robots = getRobots();
+        for (let i = 0; i < 6; i++) {
+            if (!robots[i].isValid) robotDivs[i].classList.add("error");
+        }
+        for (let isBlueAlliance of [true, false]) {
+            let color = isBlueAlliance ? "blue" : "red";
+            let numNotes = document.getElementById(`${color}-gatherNotes`).valueAsNumber;
+            let noteGatherTime = isNaN(numNotes) ? null : getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes);
+            document.getElementById(`${color}-noteGatherTime`).innerText = noteGatherTime ?? "Unknown";
+            document.getElementById(`${color}-endgameNotes`).innerText = getAllianceNotesAtTime(isBlueAlliance, 115) ?? "Unknown";
+            let speakerScoreTime = getAllianceSpeakerScoreTime(isBlueAlliance);
+            let speakerScoreText;
+            let speakerScoreCountText = null;
+            if (speakerScoreTime === null) speakerScoreText = speakerScoreCountText = "Unknown";
+            else if (speakerScoreTime === Infinity) speakerScoreText = speakerScoreCountText = "No robots can score in speaker";
+            else if (speakerScoreTime <= 10) speakerScoreText = speakerScoreTime + " (Can score all 4)";
+            else speakerScoreText = speakerScoreTime + " (Cannot score all 4)";
+            document.getElementById(`${color}-speakerScoreTime`).innerText = speakerScoreText;
+            let speakerNotes = getAllianceSpeakerNotes(isBlueAlliance);
+            document.getElementById(`${color}-speakerScoreCount`).innerText = speakerScoreCountText ?? speakerNotes;
+            let ampScoreTime = getAllianceAmpScoreTime(isBlueAlliance);
+            let ampScoreText;
+            if (ampScoreTime === null) ampScoreText = "Unknown";
+            else if (ampScoreTime === Infinity) ampScoreText = "No robots can score in amp";
+            else ampScoreText = ampScoreTime;
+            document.getElementById(`${color}-ampScoreTime`).innerText = ampScoreText;
+            let supercycleTime = noteGatherTime && speakerScoreTime && ampScoreTime ? (noteGatherTime + speakerScoreTime + ampScoreTime) : null;
+            document.getElementById(`${color}-supercycleTime`).innerText = supercycleTime ?? "Cannot perform supercycle";
+            let pointsPerSupercycle =
+                2 * 1 // amp
+                + speakerNotes * 5 // speaker, amplified
+                + (4 - speakerNotes) * 2; // speaker, not amplified
+            document.getElementById(`${color}-pointsPerSupercycle`).innerText = supercycleTime ? pointsPerSupercycle : "Cannot perform supercycle";
+            let numSupercycles = supercycleTime ? Math.floor(115 / supercycleTime) : null;
+            document.getElementById(`${color}-numSupercycles`).innerText = numSupercycles ?? "Cannot perform supercycle";
+            let remainingSeconds = supercycleTime ? 115 - supercycleTime * numSupercycles : null;
+            document.getElementById(`${color}-remainingSeconds`).innerText = remainingSeconds ?? "Cannot perform supercycle";
+            let bonusPoints = supercycleTime ? getAllianceBonusPoints(isBlueAlliance, remainingSeconds) : null;
+            document.getElementById(`${color}-bonusPoints`).innerText = bonusPoints ?? "Cannot perform supercycle";
+            let endgameScore = supercycleTime ? numSupercycles * pointsPerSupercycle + bonusPoints : null;
+            document.getElementById(`${color}-endgameScore`).innerText = endgameScore ?? "Cannot perform supercycle";
+        }
+    }, 0);
 }
 updateOutputs();
 
