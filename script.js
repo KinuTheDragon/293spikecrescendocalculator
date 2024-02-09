@@ -27,6 +27,7 @@ class Robot {
                     break;
             }
         }
+        if (this.canScoreTrap && !this.canClimb) this.isValid = false;
     }
 }
 
@@ -64,6 +65,7 @@ function rawCsvToCleaned(obj) {
         cycleTime: obj["Cycle time (seconds)"],
         shootTime: obj["Shoot time (seconds)"],
         ampTime: obj["Amp time (seconds)"],
+        trapTime: obj["Trap time (seconds)"],
         teamNumber: obj["Team number"]
     };
 }
@@ -188,7 +190,7 @@ function updateOutputs() {
             else ampScoreText = ampScoreTime;
             document.getElementById(`${color}-ampScoreTime`).innerText = ampScoreText;
             let supercycleTime = noteGatherTime && speakerScoreTime && ampScoreTime ? (noteGatherTime + speakerScoreTime + ampScoreTime) : null;
-            document.getElementById(`${color}-supercycleTime`).innerText = supercycleTime ?? "Cannot perform supercycle";
+            document.getElementById(`${color}-supercycleTime`).innerText = supercycleTime && isFinite(supercycleTime) ? supercycleTime : "Cannot perform supercycle";
             let pointsPerSupercycle =
                 2 * 1 // amp
                 + speakerNotes * 5 // speaker, amplified
@@ -196,11 +198,11 @@ function updateOutputs() {
             document.getElementById(`${color}-pointsPerSupercycle`).innerText = supercycleTime ? pointsPerSupercycle : "Cannot perform supercycle";
             let numSupercycles = supercycleTime ? Math.floor(115 / supercycleTime) : null;
             document.getElementById(`${color}-numSupercycles`).innerText = numSupercycles ?? "Cannot perform supercycle";
-            let remainingSeconds = supercycleTime ? 115 - supercycleTime * numSupercycles : null;
+            let remainingSeconds = supercycleTime && isFinite(supercycleTime) ? 115 - supercycleTime * numSupercycles : null;
             document.getElementById(`${color}-remainingSeconds`).innerText = remainingSeconds ?? "Cannot perform supercycle";
-            let bonusPoints = supercycleTime ? getAllianceBonusPoints(isBlueAlliance, remainingSeconds) : null;
+            let bonusPoints = supercycleTime && isFinite(supercycleTime) ? getAllianceBonusPoints(isBlueAlliance, remainingSeconds) : null;
             document.getElementById(`${color}-bonusPoints`).innerText = bonusPoints ?? "Cannot perform supercycle";
-            let endgameScore = supercycleTime ? numSupercycles * pointsPerSupercycle + bonusPoints : null;
+            let endgameScore = supercycleTime && isFinite(supercycleTime) ? numSupercycles * pointsPerSupercycle + bonusPoints : null;
             document.getElementById(`${color}-endgameScore`).innerText = endgameScore ?? "Cannot perform supercycle";
         }
     }, 0);
