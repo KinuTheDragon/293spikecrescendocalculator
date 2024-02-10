@@ -6,6 +6,7 @@
     --header: #444;
     --result: #0f0;
     --error: #f80;
+    --error-passive: #ff880088;
 }
 
 body {
@@ -54,14 +55,14 @@ input {
 }
 
 @keyframes error {
-    0% {background-color: initial;}
-    70% {background-color: initial;}
+    0% {background-color: var(--error-passive);}
+    90% {background-color: var(--error-passive);}
     100% {background-color: var(--error);}
 }
 
 .robot.error {
     animation-name: error;
-    animation-duration: 0.5s;
+    animation-duration: 1.5s;
     animation-direction: alternate;
     animation-iteration-count: infinite;
 }
