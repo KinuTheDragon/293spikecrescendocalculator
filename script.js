@@ -49,23 +49,23 @@ function updateScoutingData() {
                 else if (rawValue === "TRUE" || rawValue === "FALSE") value = rawValue === "TRUE";
                 obj[lines[0][i]] = value;
             }
-            scoutingData.push(rawCsvToCleaned(obj));
+            scoutingData.push(rawCsvToCleaned(obj, lines[0]));
         }
     }
 }
 
 // CHANGE THIS WHEN THE CSV FORMAT CHANGES
-function rawCsvToCleaned(obj) {
+function rawCsvToCleaned(obj, headers) {
     return {
-        canClimb: obj["Can climb?"],
-        canScoreAmp: obj["Can score amp?"],
-        canScoreSpeaker: obj["Can score speaker?"],
-        canScoreTrap: obj["Can score trap?"],
-        canShootTrap: obj["Can shoot trap?"],
-        cycleTime: obj["Cycle time (seconds)"],
-        shootTime: obj["Shoot time (seconds)"],
-        ampTime: obj["Amp time (seconds)"],
-        teamNumber: obj["Team number"]
+        teamNumber: obj[headers[0]],
+        cycleTime: obj[headers[1]],
+        shootTime: obj[headers[2]],
+        ampTime: obj[headers[3]],
+        canScoreAmp: obj[headers[4]],
+        canScoreSpeaker: obj[headers[5]],
+        canClimb: obj[headers[6]],
+        canScoreTrap: obj[headers[7]],
+        canShootTrap: obj[headers[8]]
     };
 }
 
