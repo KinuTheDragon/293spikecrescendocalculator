@@ -54,8 +54,9 @@ input {
 }
 
 @keyframes error {
-    from {background-color: initial;}
-    to {background-color: var(--error);}
+    0% {background-color: initial;}
+    70% {background-color: initial;}
+    100% {background-color: var(--error);}
 }
 
 .robot.error {
