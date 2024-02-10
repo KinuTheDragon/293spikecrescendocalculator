@@ -65,7 +65,6 @@ function rawCsvToCleaned(obj) {
         cycleTime: obj["Cycle time (seconds)"],
         shootTime: obj["Shoot time (seconds)"],
         ampTime: obj["Amp time (seconds)"],
-        trapTime: obj["Trap time (seconds)"],
         teamNumber: obj["Team number"]
     };
 }
@@ -189,7 +188,8 @@ function updateOutputs() {
             else if (ampScoreTime === Infinity) ampScoreText = "No robots can score in amp";
             else ampScoreText = ampScoreTime;
             document.getElementById(`${color}-ampScoreTime`).innerText = ampScoreText;
-            let supercycleTime = noteGatherTime && speakerScoreTime && ampScoreTime ? (noteGatherTime + speakerScoreTime + ampScoreTime) : null;
+            let supercycleNoteGatherTime = getAllianceTimeUnitsForNotes(isBlueAlliance, 6);
+            let supercycleTime = supercycleNoteGatherTime && speakerScoreTime && ampScoreTime ? (supercycleNoteGatherTime + speakerScoreTime + ampScoreTime) : null;
             document.getElementById(`${color}-supercycleTime`).innerText = supercycleTime && isFinite(supercycleTime) ? supercycleTime : "Cannot perform supercycle";
             let pointsPerSupercycle =
                 2 * 1 // amp
@@ -204,6 +204,17 @@ function updateOutputs() {
             document.getElementById(`${color}-bonusPoints`).innerText = bonusPoints ?? "Cannot perform supercycle";
             let endgameScore = supercycleTime && isFinite(supercycleTime) ? numSupercycles * pointsPerSupercycle + bonusPoints : null;
             document.getElementById(`${color}-endgameScore`).innerText = endgameScore ?? "Cannot perform supercycle";
+            let reachableTraps = !getAlliance(isBlueAlliance).every(x => x.isValid) ? null :
+                                 getAlliance(isBlueAlliance).filter(x => x.canShootTrap).length > 0 ? 3 :
+                                 getAlliance(isBlueAlliance).filter(x => x.canScoreTrap).length;
+            document.getElementById(`${color}-reachableTraps`).innerText = reachableTraps ?? "Unknown";
+            let potentialClimbers = getAlliance(isBlueAlliance).filter(x => x.canClimb);
+            let chainsRequired = Math.max(1, potentialClimbers.filter(x => x.canScoreTrap && !x.canShootTrap).length);
+            let harmonyPoints = !getAlliance(isBlueAlliance).every(x => x.isValid) ? null :
+                                Math.max(0, potentialClimbers.length - chainsRequired) * 2;
+            document.getElementById(`${color}-harmonyPoints`).innerText = harmonyPoints ?? "Unknown";
+            document.getElementById(`${color}-finalPredictedScore`).innerText =
+                endgameScore ? endgameScore + reachableTraps * 5 + harmonyPoints : "Unknown";
         }
     }, 0);
 }
