@@ -5,8 +5,8 @@
     --background: #111;
     --header: #444;
     --result: #0f0;
-    --error: #f80;
-    --error-passive: #ff880088;
+    --error: #c00;
+    --error-bg: #22222288;
 }
 
 body {
@@ -52,19 +52,12 @@ input {
     display: grid;
     grid-template-rows: repeat(2, auto);
     border-radius: 5%;
-}
-
-@keyframes error {
-    0% {background-color: var(--error-passive);}
-    90% {background-color: var(--error-passive);}
-    100% {background-color: var(--error);}
+    border: 3px solid transparent;
 }
 
 .robot.error {
-    animation-name: error;
-    animation-duration: 1.5s;
-    animation-direction: alternate;
-    animation-iteration-count: infinite;
+    border: 3px solid var(--error);
+    background-color: var(--error-bg);
 }
 
 .data-input {
