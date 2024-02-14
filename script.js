@@ -3,6 +3,7 @@ class Robot {
         this.isBlueAlliance = isBlueAlliance;
         this.id = id;
         this.isValid = true;
+        this.errors = [];
 
         let allInputs = document.querySelectorAll("input");
         for (let i of allInputs) {
@@ -15,9 +16,10 @@ class Robot {
             switch (i.type) {
                 case "number":
                     setKey(i.valueAsNumber);
-                    if (isNaN(i.valueAsNumber)) this.isValid = false;
-                    if (i.valueAsNumber <= 0 && i.getAttribute("pos") !== null) this.isValid = false;
-                    if (i.valueAsNumber * 10 !== Math.floor(i.valueAsNumber * 10) && i.getAttribute("tenth") !== null) this.isValid = false;
+                    if (!i.checkValidity() || isNaN(i.valueAsNumber)) {
+                        this.isValid = false;
+                        this.errors.push(i);
+                    }
                     break;
                 case "checkbox":
                     setKey(i.checked);
@@ -27,7 +29,10 @@ class Robot {
                     break;
             }
         }
-        if (this.canScoreTrap && !this.canClimb) this.isValid = false;
+        if (this.canScoreTrap && !this.canClimb) {
+            this.isValid = false;
+            this.errors.push(document.getElementById(`${isBlueAlliance ? "blue" : "red"}-${id}-canScoreTrap`));
+        }
     }
 }
 
@@ -160,10 +165,15 @@ function getAllianceBonusPoints(isBlueAlliance, timeLeft) {
 
 function updateOutputs() {
     let robotDivs = [...document.querySelectorAll(".robot:not(.hidden)")];
-    robotDivs.forEach(x => {x.classList.remove("error");});
+    document.querySelectorAll(".error").forEach(x => {x.classList.remove("error");});
     let robots = getRobots();
     for (let i = 0; i < 6; i++) {
         if (!robots[i].isValid) robotDivs[i].classList.add("error");
+        for (let error of robots[i].errors) {
+            error.classList.add("error");
+            let anim = error.getAnimations()[0];
+            if (anim) anim.currentTime = 0;
+        }
         let anim = robotDivs[i].getAnimations()[0];
         if (anim) anim.currentTime = 0;
     }

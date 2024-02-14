@@ -26,6 +26,7 @@ while (true) {
         let allianceTemplateElement = document.getElementById("alliance").firstElementChild;
         for (let [label, idPart] of [
             ["Number of notes to score at endgame (115 seconds)", "endgameNotes"],
+            ["Supercycle stats:", null],
             ["Seconds to score 4 notes in speaker", "speakerScoreTime"],
             ["Number of notes scoreable in speaker", "speakerScoreCount"],
             ["Seconds to score 2 notes in amp", "ampScoreTime"],
@@ -34,13 +35,24 @@ while (true) {
             ["Number of supercycles by endgame (115 seconds)", "numSupercycles"],
             ["Remaining seconds", "remainingSeconds"],
             ["Non-supercycle points possible", "bonusPoints"],
+            ["Endgame:", null],
             ["Predicted score by endgame", "endgameScore"],
             ["Traps reachable", "reachableTraps"],
             ["Harmony points available", "harmonyPoints"],
         ]) {
-            let result = useTemplate("summary", {label, idPart, wrap: x => `$\{${x}}`}).firstElementChild;
-            allianceTemplateElement.insertBefore(document.createElement("br"), allianceTemplateElement.lastElementChild.previousElementSibling);
-            allianceTemplateElement.insertBefore(result, allianceTemplateElement.lastElementChild.previousElementSibling);
+            let lists = allianceTemplateElement.querySelectorAll("ul");
+            let lastList = lists[lists.length - 1];
+            if (idPart === null) {
+                let header = document.createElement("h4");
+                header.appendChild(document.createTextNode(label));
+                allianceTemplateElement.insertBefore(header, lastList.nextElementSibling);
+                let newList = document.createElement("ul");
+                newList.classList.add("summaries");
+                allianceTemplateElement.insertBefore(newList, header.nextElementSibling);
+            } else {
+                let result = useTemplate("summary", {label, idPart, wrap: x => `$\{${x}}`}).firstElementChild;
+                lastList.appendChild(result);
+            }
         }
     }
 }

@@ -5,8 +5,10 @@
     --background: #111;
     --header: #444;
     --result: #0f0;
-    --error: #c00;
-    --error-bg: #22222288;
+    --error: #bf0808;
+    --error-light: red;
+    --error-lightest: #f7a9a9;
+    --error-bg: rgba(0, 0, 0, 0.15);
 }
 
 body {
@@ -30,8 +32,19 @@ body {
     grid-template-columns: repeat(2, 50%);
 }
 
-input {
+.robot input {
     min-width: 0;
+    font-family: 'Inter', sans-serif;
+    border-radius: 0.4vw;
+    height: 2vh;
+    margin-top: 0.15vh;
+    margin-bottom: 0.15vh;
+}
+
+.robot input.error {
+    border: 3px solid var(--error);
+    animation: errorBorder 2s infinite;
+    accent-color: var(--error);
 }
 
 .small-number {
@@ -49,14 +62,29 @@ input {
 }
 
 .robot {
+    margin-left: 0.3vw;
+    margin-right: 0.3vw;
     display: grid;
     grid-template-rows: repeat(2, auto);
     border-radius: 5%;
-    border: 3px solid transparent;
+}
+
+@keyframes errorBorder {
+    0% {
+        border: 3px solid var(--error-light);
+        accent-color: var(--error);
+    }
+    50% {
+        border: 3px solid var(--error-lightest);
+        accent-color: var(--error-light);
+    }
+    100% {
+        border: 3px solid var(--error-light);
+        accent-color: var(--error);
+    }
 }
 
 .robot.error {
-    border: 3px solid var(--error);
     background-color: var(--error-bg);
 }
 
@@ -112,4 +140,8 @@ input {
     60% {color: #0ff;}
     80% {color: #00f;}
     100% {color: #80f;}
+}
+
+.summaries {
+    text-align: left;
 }
