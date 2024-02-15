@@ -5,6 +5,8 @@ class Robot {
         this.isValid = true;
         this.errors = [];
 
+        let color = isBlueAlliance ? "blue" : "red";
+
         let allInputs = document.querySelectorAll("input");
         for (let i of allInputs) {
             if (this.disabled) break;
@@ -17,7 +19,6 @@ class Robot {
                 case "number":
                     setKey(i.valueAsNumber);
                     if (!i.checkValidity() || isNaN(i.valueAsNumber)) {
-                        this.isValid = false;
                         this.errors.push(i);
                     }
                     break;
@@ -30,9 +31,11 @@ class Robot {
             }
         }
         if (this.canScoreTrap && !this.canClimb) {
-            this.isValid = false;
-            this.errors.push(document.getElementById(`${isBlueAlliance ? "blue" : "red"}-${id}-canScoreTrap`));
+            this.errors.push(document.getElementById(`${color}-${id}-canScoreTrap`));
         }
+        if (!this.canScoreAmp) this.errors = this.errors.filter(x => x.id !== `${color}-${id}-ampTime`);
+        if (!this.canScoreSpeaker) this.errors = this.errors.filter(x => x.id !== `${color}-${id}-shootTime`);
+        this.isValid = !this.errors.length;
     }
 }
 
@@ -179,6 +182,12 @@ function updateOutputs() {
     }
     for (let isBlueAlliance of [true, false]) {
         let color = isBlueAlliance ? "blue" : "red";
+        for (let id = 0; id < 3; id++) {
+            if (!document.getElementById(`${color}-${id}-disabled`).checked) {
+                document.getElementById(`${color}-${id}-ampTime`).disabled = !document.getElementById(`${color}-${id}-canScoreAmp`).checked;
+                document.getElementById(`${color}-${id}-shootTime`).disabled = !document.getElementById(`${color}-${id}-canScoreSpeaker`).checked;
+            }
+        }
         let numNotes = document.getElementById(`${color}-gatherNotes`).valueAsNumber;
         let noteGatherTime = isNaN(numNotes) ? null : getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes);
         document.getElementById(`${color}-noteGatherTime`).innerText = noteGatherTime ?? "Unknown";
