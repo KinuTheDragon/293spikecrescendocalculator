@@ -64,16 +64,18 @@ function updateScoutingData() {
 
 // CHANGE THIS WHEN THE CSV FORMAT CHANGES
 function rawCsvToCleaned(obj, headers) {
+    let capabilities = obj["Check the checkboxes below if needed."].split(", ");
+    let capable = x => capabilities.includes(x) ? "TRUE" : "FALSE";
     return {
-        teamNumber: obj[headers[0]],
-        cycleTime: obj[headers[1]],
-        shootTime: obj[headers[2]],
-        ampTime: obj[headers[3]],
-        canScoreAmp: obj[headers[4]],
-        canScoreSpeaker: obj[headers[5]],
-        canClimb: obj[headers[6]],
-        canScoreTrap: obj[headers[7]],
-        canShootTrap: obj[headers[8]]
+        teamNumber: obj["What is the team number?"],
+        cycleTime: obj["What is their cycle time in seconds? (i.e. time to go out, grab a note, and bring it back)"],
+        shootTime: obj["What is their shoot time in seconds? (i.e. time to shoot into the speaker)"],
+        ampTime: obj["What is their amp time in seconds? (i.e. time to put a note in the amp)"],
+        canScoreAmp: capable("Can score in the amp"),
+        canScoreSpeaker: capable("Can score in the speaker"),
+        canClimb: capable("Can climb"),
+        canScoreTrap: capable("Can score in the trap after climbing"),
+        canShootTrap: capable("Can shoot in the trap from the ground")
     };
 }
 
