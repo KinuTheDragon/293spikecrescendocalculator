@@ -3,6 +3,9 @@ class Robot {
         this.isBlueAlliance = isBlueAlliance;
         this.id = id;
         this.isValid = true;
+        this.errors = [];
+
+        let color = isBlueAlliance ? "blue" : "red";
 
         let allInputs = document.querySelectorAll("input");
         for (let i of allInputs) {
@@ -15,9 +18,9 @@ class Robot {
             switch (i.type) {
                 case "number":
                     setKey(i.valueAsNumber);
-                    if (isNaN(i.valueAsNumber)) this.isValid = false;
-                    if (i.valueAsNumber <= 0 && i.getAttribute("pos") !== null) this.isValid = false;
-                    if (i.valueAsNumber * 10 !== Math.floor(i.valueAsNumber * 10) && i.getAttribute("tenth") !== null) this.isValid = false;
+                    if (!i.checkValidity() || isNaN(i.valueAsNumber)) {
+                        this.errors.push(i);
+                    }
                     break;
                 case "checkbox":
                     setKey(i.checked);
@@ -27,6 +30,12 @@ class Robot {
                     break;
             }
         }
+        if (this.canScoreTrap && !this.canClimb) {
+            this.errors.push(document.getElementById(`${color}-${id}-canScoreTrap`));
+        }
+        if (!this.canScoreAmp) this.errors = this.errors.filter(x => x.id !== `${color}-${id}-ampTime`);
+        if (!this.canScoreSpeaker) this.errors = this.errors.filter(x => x.id !== `${color}-${id}-shootTime`);
+        this.isValid = !this.errors.length;
     }
 }
 
@@ -48,23 +57,25 @@ function updateScoutingData() {
                 else if (rawValue === "TRUE" || rawValue === "FALSE") value = rawValue === "TRUE";
                 obj[lines[0][i]] = value;
             }
-            scoutingData.push(rawCsvToCleaned(obj));
+            scoutingData.push(rawCsvToCleaned(obj, lines[0]));
         }
     }
 }
 
 // CHANGE THIS WHEN THE CSV FORMAT CHANGES
-function rawCsvToCleaned(obj) {
+function rawCsvToCleaned(obj, headers) {
+    let capabilities = obj["Check the checkboxes below if needed."].split(", ");
+    let capable = x => capabilities.includes(x) ? "TRUE" : "FALSE";
     return {
-        canClimb: obj["Can climb?"],
-        canScoreAmp: obj["Can score amp?"],
-        canScoreSpeaker: obj["Can score speaker?"],
-        canScoreTrap: obj["Can score trap?"],
-        canShootTrap: obj["Can shoot trap?"],
-        cycleTime: obj["Cycle time (seconds)"],
-        shootTime: obj["Shoot time (seconds)"],
-        ampTime: obj["Amp time (seconds)"],
-        teamNumber: obj["Team number"]
+        teamNumber: obj["What is the team number?"],
+        cycleTime: obj["What is their cycle time in seconds? (i.e. time to go out, grab a note, and bring it back)"],
+        shootTime: obj["What is their shoot time in seconds? (i.e. time to shoot into the speaker)"],
+        ampTime: obj["What is their amp time in seconds? (i.e. time to put a note in the amp)"],
+        canScoreAmp: capable("Can score in the amp"),
+        canScoreSpeaker: capable("Can score in the speaker"),
+        canClimb: capable("Can climb"),
+        canScoreTrap: capable("Can score in the trap after climbing"),
+        canShootTrap: capable("Can shoot in the trap from the ground")
     };
 }
 
@@ -159,51 +170,74 @@ function getAllianceBonusPoints(isBlueAlliance, timeLeft) {
 
 function updateOutputs() {
     let robotDivs = [...document.querySelectorAll(".robot:not(.hidden)")];
-    robotDivs.forEach(x => {x.classList.remove("error");});
-    setTimeout(() => {
-        let robots = getRobots();
-        for (let i = 0; i < 6; i++) {
-            if (!robots[i].isValid) robotDivs[i].classList.add("error");
+    document.querySelectorAll(".error").forEach(x => {x.classList.remove("error");});
+    let robots = getRobots();
+    for (let i = 0; i < 6; i++) {
+        if (!robots[i].isValid) robotDivs[i].classList.add("error");
+        for (let error of robots[i].errors) {
+            error.classList.add("error");
+            let anim = error.getAnimations()[0];
+            if (anim) anim.currentTime = 0;
         }
-        for (let isBlueAlliance of [true, false]) {
-            let color = isBlueAlliance ? "blue" : "red";
-            let numNotes = document.getElementById(`${color}-gatherNotes`).valueAsNumber;
-            let noteGatherTime = isNaN(numNotes) ? null : getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes);
-            document.getElementById(`${color}-noteGatherTime`).innerText = noteGatherTime ?? "Unknown";
-            document.getElementById(`${color}-endgameNotes`).innerText = getAllianceNotesAtTime(isBlueAlliance, 115) ?? "Unknown";
-            let speakerScoreTime = getAllianceSpeakerScoreTime(isBlueAlliance);
-            let speakerScoreText;
-            let speakerScoreCountText = null;
-            if (speakerScoreTime === null) speakerScoreText = speakerScoreCountText = "Unknown";
-            else if (speakerScoreTime === Infinity) speakerScoreText = speakerScoreCountText = "No robots can score in speaker";
-            else if (speakerScoreTime <= 10) speakerScoreText = speakerScoreTime + " (Can score all 4)";
-            else speakerScoreText = speakerScoreTime + " (Cannot score all 4)";
-            document.getElementById(`${color}-speakerScoreTime`).innerText = speakerScoreText;
-            let speakerNotes = getAllianceSpeakerNotes(isBlueAlliance);
-            document.getElementById(`${color}-speakerScoreCount`).innerText = speakerScoreCountText ?? speakerNotes;
-            let ampScoreTime = getAllianceAmpScoreTime(isBlueAlliance);
-            let ampScoreText;
-            if (ampScoreTime === null) ampScoreText = "Unknown";
-            else if (ampScoreTime === Infinity) ampScoreText = "No robots can score in amp";
-            else ampScoreText = ampScoreTime;
-            document.getElementById(`${color}-ampScoreTime`).innerText = ampScoreText;
-            let supercycleTime = noteGatherTime && speakerScoreTime && ampScoreTime ? (noteGatherTime + speakerScoreTime + ampScoreTime) : null;
-            document.getElementById(`${color}-supercycleTime`).innerText = supercycleTime ?? "Cannot perform supercycle";
-            let pointsPerSupercycle =
-                2 * 1 // amp
-                + speakerNotes * 5 // speaker, amplified
-                + (4 - speakerNotes) * 2; // speaker, not amplified
-            document.getElementById(`${color}-pointsPerSupercycle`).innerText = supercycleTime ? pointsPerSupercycle : "Cannot perform supercycle";
-            let numSupercycles = supercycleTime ? Math.floor(115 / supercycleTime) : null;
-            document.getElementById(`${color}-numSupercycles`).innerText = numSupercycles ?? "Cannot perform supercycle";
-            let remainingSeconds = supercycleTime ? 115 - supercycleTime * numSupercycles : null;
-            document.getElementById(`${color}-remainingSeconds`).innerText = remainingSeconds ?? "Cannot perform supercycle";
-            let bonusPoints = supercycleTime ? getAllianceBonusPoints(isBlueAlliance, remainingSeconds) : null;
-            document.getElementById(`${color}-bonusPoints`).innerText = bonusPoints ?? "Cannot perform supercycle";
-            let endgameScore = supercycleTime ? numSupercycles * pointsPerSupercycle + bonusPoints : null;
-            document.getElementById(`${color}-endgameScore`).innerText = endgameScore ?? "Cannot perform supercycle";
+        let anim = robotDivs[i].getAnimations()[0];
+        if (anim) anim.currentTime = 0;
+    }
+    for (let isBlueAlliance of [true, false]) {
+        let color = isBlueAlliance ? "blue" : "red";
+        for (let id = 0; id < 3; id++) {
+            if (!document.getElementById(`${color}-${id}-disabled`).checked) {
+                document.getElementById(`${color}-${id}-ampTime`).disabled = !document.getElementById(`${color}-${id}-canScoreAmp`).checked;
+                document.getElementById(`${color}-${id}-shootTime`).disabled = !document.getElementById(`${color}-${id}-canScoreSpeaker`).checked;
+            }
         }
-    }, 0);
+        let numNotes = document.getElementById(`${color}-gatherNotes`).valueAsNumber;
+        let noteGatherTime = isNaN(numNotes) ? null : getAllianceTimeUnitsForNotes(isBlueAlliance, numNotes);
+        document.getElementById(`${color}-noteGatherTime`).innerText = noteGatherTime ?? "Unknown";
+        document.getElementById(`${color}-endgameNotes`).innerText = getAllianceNotesAtTime(isBlueAlliance, 115) ?? "Unknown";
+        let speakerScoreTime = getAllianceSpeakerScoreTime(isBlueAlliance);
+        let speakerScoreText;
+        let speakerScoreCountText = null;
+        if (speakerScoreTime === null) speakerScoreText = speakerScoreCountText = "Unknown";
+        else if (speakerScoreTime === Infinity) speakerScoreText = speakerScoreCountText = "No robots can score in speaker";
+        else if (speakerScoreTime <= 10) speakerScoreText = speakerScoreTime + " (Can score all 4)";
+        else speakerScoreText = speakerScoreTime + " (Cannot score all 4)";
+        document.getElementById(`${color}-speakerScoreTime`).innerText = speakerScoreText;
+        let speakerNotes = getAllianceSpeakerNotes(isBlueAlliance);
+        document.getElementById(`${color}-speakerScoreCount`).innerText = speakerScoreCountText ?? speakerNotes;
+        let ampScoreTime = getAllianceAmpScoreTime(isBlueAlliance);
+        let ampScoreText;
+        if (ampScoreTime === null) ampScoreText = "Unknown";
+        else if (ampScoreTime === Infinity) ampScoreText = "No robots can score in amp";
+        else ampScoreText = ampScoreTime;
+        document.getElementById(`${color}-ampScoreTime`).innerText = ampScoreText;
+        let supercycleNoteGatherTime = getAllianceTimeUnitsForNotes(isBlueAlliance, 6);
+        let supercycleTime = supercycleNoteGatherTime && speakerScoreTime && ampScoreTime ? (supercycleNoteGatherTime + speakerScoreTime + ampScoreTime) : null;
+        document.getElementById(`${color}-supercycleTime`).innerText = supercycleTime && isFinite(supercycleTime) ? supercycleTime : "Cannot perform supercycle";
+        let pointsPerSupercycle =
+            2 * 1 // amp
+            + speakerNotes * 5 // speaker, amplified
+            + (4 - speakerNotes) * 2; // speaker, not amplified
+        document.getElementById(`${color}-pointsPerSupercycle`).innerText = supercycleTime ? pointsPerSupercycle : "Cannot perform supercycle";
+        let numSupercycles = supercycleTime ? Math.floor(115 / supercycleTime) : null;
+        document.getElementById(`${color}-numSupercycles`).innerText = numSupercycles ?? "Cannot perform supercycle";
+        let remainingSeconds = supercycleTime && isFinite(supercycleTime) ? 115 - supercycleTime * numSupercycles : null;
+        document.getElementById(`${color}-remainingSeconds`).innerText = remainingSeconds ?? "Cannot perform supercycle";
+        let bonusPoints = supercycleTime && isFinite(supercycleTime) ? getAllianceBonusPoints(isBlueAlliance, remainingSeconds) : null;
+        document.getElementById(`${color}-bonusPoints`).innerText = bonusPoints ?? "Cannot perform supercycle";
+        let endgameScore = supercycleTime && isFinite(supercycleTime) ? numSupercycles * pointsPerSupercycle + bonusPoints : null;
+        document.getElementById(`${color}-endgameScore`).innerText = endgameScore ?? "Cannot perform supercycle";
+        let reachableTraps = !getAlliance(isBlueAlliance).every(x => x.isValid) ? null :
+                                getAlliance(isBlueAlliance).filter(x => x.canShootTrap).length > 0 ? 3 :
+                                getAlliance(isBlueAlliance).filter(x => x.canScoreTrap).length;
+        document.getElementById(`${color}-reachableTraps`).innerText = reachableTraps ?? "Unknown";
+        let potentialClimbers = getAlliance(isBlueAlliance).filter(x => x.canClimb);
+        let chainsRequired = Math.max(1, potentialClimbers.filter(x => x.canScoreTrap && !x.canShootTrap).length);
+        let harmonyPoints = !getAlliance(isBlueAlliance).every(x => x.isValid) ? null :
+                            Math.max(0, potentialClimbers.length - chainsRequired) * 2;
+        document.getElementById(`${color}-harmonyPoints`).innerText = harmonyPoints ?? "Unknown";
+        document.getElementById(`${color}-finalPredictedScore`).innerText =
+            endgameScore ? endgameScore + reachableTraps * 5 + harmonyPoints : "Unknown";
+    }
 }
 updateOutputs();
 
@@ -214,4 +248,5 @@ document.querySelectorAll(".disabler").forEach(i => i.addEventListener("input", 
     document.querySelectorAll("input").forEach(ii => {
         if (ii.id.startsWith(prefix) && ii !== i) ii.disabled = i.checked;
     });
+    updateOutputs();
 }));
